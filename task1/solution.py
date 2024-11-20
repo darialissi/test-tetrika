@@ -8,19 +8,10 @@ def strict(func):
         args = list(args) + list(kwargs.values())
 
         for arg, t in zip(args, types):
-            if not isinstance(arg, t):
+            if type(arg) != t:
                 raise TypeError
-            
+
         result = func(*args, **kwargs)
         return result
-    
+
     return wrapper
-
-
-@strict
-def sum_two(a: int, b: int) -> int:
-    return a + b
-
-
-print(sum_two(1, 2))  # >>> 3
-print(sum_two(1, 2.4))  # >>> TypeError

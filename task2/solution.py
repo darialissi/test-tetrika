@@ -1,10 +1,9 @@
 import asyncio
+
 import aiofiles
 from aiocsv import AsyncWriter
 from aiohttp import ClientSession
-
 from bs4 import BeautifulSoup
-
 
 BASE = "https://ru.wikipedia.org"
 
@@ -18,7 +17,7 @@ async def fetch(session: ClientSession, url: str) -> None:
         return await response.text()
 
 
-async def parse(html) -> tuple[dict[str, int], str]:
+async def parse(html) -> tuple[dict[str, int], str | None]:
     temp = {}
 
     soup = BeautifulSoup(html, "html.parser")
@@ -31,11 +30,9 @@ async def parse(html) -> tuple[dict[str, int], str]:
         counts = sum(map(lambda x: 1, titles))
         temp[letter] = counts
 
-    uri = tag.select("[href]")[-1]
-    if uri.text.strip() == "Следующая страница":
-        uri = uri.attrs.get("href")
-    else:
-        uri = None
+    uri = tag.select_one("a:-soup-contains('Следующая страница')")
+    if uri:
+        uri = uri.get("href")
 
     return temp, uri
 
@@ -49,7 +46,7 @@ async def to_csv(data: dict, filename: str) -> None:
 async def main() -> None:
     result = {}
     url = "https://ru.wikipedia.org/w/index.php?title=Категория:Животные_по_алфавиту"
-    
+
     while True:
         async with ClientSession() as session:
             html = await fetch(session, url)
