@@ -1,17 +1,15 @@
-def normalize(groups: list[tuple]) -> list[tuple]:
+def normalize(groups: list[tuple]) -> list[tuple[int]]:
     """
-    Нормализует интервалы, исключая субинтервалы.
+    Нормализует интервалы, исключая субинтервалы
     """
     result = []
 
     current = [groups[0][0], groups[0][1]]
 
-    for group in groups:
-        if group[0] < current[1]:
-            if group[0] < current[0]:
-                current[0] = group[0]
-            if group[1] > current[1]:
-                current[1] = group[1]
+    for group in groups[1:]:
+        if group[0] <= current[1]:
+            current[0] = min(group[0], current[0])
+            current[1] = max(group[1], current[1])
         else:
             result.append(current)
             current = [group[0], group[1]]
@@ -42,22 +40,20 @@ def appearance(intervals: dict[str, list[int]]) -> int:
     current = [0, 0]
 
     while i1 < len(p_groups) and i2 < len(t_groups):
-        result += current[1] - current[0]
 
         # Начало общего интервала
-        if p_groups[i1][0] > t_groups[i2][0]:
-            current[0] = p_groups[i1][0]
-        else:
-            current[0] = t_groups[i2][0]
+        current[0] = max(p_groups[i1][0], t_groups[i2][0])
 
         # Конец общего интервала
         if p_groups[i1][1] < t_groups[i2][1]:
-            if p_groups[i1][1] > current[0]:
-                current[1] = p_groups[i1][1]
+            current[1] = p_groups[i1][1]
             i1 += 1
         elif p_groups[i1][1] > t_groups[i2][1]:
-            if t_groups[i2][1] > current[0]:
-                current[1] = t_groups[i2][1]
+            current[1] = t_groups[i2][1]
+            i2 += 1
+        else:
+            current[1] = t_groups[i2][1]
+            i1 += 1
             i2 += 1
 
         # Краевые значения
@@ -66,10 +62,9 @@ def appearance(intervals: dict[str, list[int]]) -> int:
         if current[1] > lesson[1]:
             current[1] = lesson[1]
 
-        # Проверка конца текущего интервала
-        if current[0] > current[1]:
-            current[1] = current[0]
+        # Проверка валидности интервала
+        if current[0] < current[1]:
+            result += current[1] - current[0]
 
-    result += current[1] - current[0]
     return result
 
