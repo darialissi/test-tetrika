@@ -19,7 +19,7 @@ def sum_str(a: str, b: str) -> str:
 
 
 @strict
-def sum_bool(a: bool, b: bool) -> str:
+def sum_bool(a: bool, b: bool) -> int:
     return a + b
 
 
