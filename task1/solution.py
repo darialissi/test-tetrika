@@ -4,11 +4,14 @@ from functools import wraps
 def strict(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        types = list(func.__annotations__.values())
-        args = list(args) + list(kwargs.values())
+        types = func.__annotations__
 
-        for arg, t in zip(args, types):
+        for arg, t in zip(args, types.values()):
             if type(arg) != t:
+                raise TypeError
+            
+        for k, v in kwargs.items():
+            if type(v) != types.get(k):
                 raise TypeError
 
         result = func(*args, **kwargs)
