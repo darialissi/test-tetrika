@@ -1,26 +1,19 @@
 import asyncio
+import logging
 
 import aiofiles
+import requests
 from aiocsv import AsyncWriter
-from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
-BASE = "https://ru.wikipedia.org"
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 
-def generate_url(uri: str) -> str:
-    return f"{BASE}{uri}"
-
-
-async def fetch(session: ClientSession, url: str) -> None:
-    async with session.get(url) as response:
-        return await response.text()
-
-
-async def parse(html) -> tuple[dict[str, int], str | None]:
+def parse(html: str) -> tuple[dict[str, int], str | None]:
     temp = {}
 
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, "lxml")
     tag = soup.select_one("#mw-pages")
     groups = tag.select("div.mw-category-group")
 
@@ -37,30 +30,32 @@ async def parse(html) -> tuple[dict[str, int], str | None]:
     return temp, uri
 
 
+def get_result() -> dict[str, int]:
+    result = {}
+    base = "https://ru.wikipedia.org"
+    url = "https://ru.wikipedia.org/w/index.php?title=Категория:Животные_по_алфавиту"
+
+    while True:
+        html = requests.get(url)
+        temp, uri = parse(html.text)
+        for letter, counts in temp.items():
+            result[letter] = result.get(letter, 0) + counts
+
+        if not uri:
+            break
+
+        url = f"{base}{uri}"
+
+    return result
+
+
 async def to_csv(data: dict, filename: str) -> None:
     async with aiofiles.open(filename, mode="w", encoding="utf-8") as afp:
         writer = AsyncWriter(afp, dialect="unix")
         await writer.writerows(data.items())
 
 
-async def main() -> None:
-    result = {}
-    url = "https://ru.wikipedia.org/w/index.php?title=Категория:Животные_по_алфавиту"
-
-    while True:
-        async with ClientSession() as session:
-            html = await fetch(session, url)
-            temp, uri = await parse(html)
-            for letter, counts in temp.items():
-                result[letter] = result.get(letter, 0) + counts
-
-            if not uri:
-                break
-
-            url = generate_url(uri)
-
-    await to_csv(result, "task2/beasts.csv")
-
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    logger.info("Started")
+    asyncio.run(to_csv(get_result(), "task2/beasts.csv"))
+    logger.info("Finished")

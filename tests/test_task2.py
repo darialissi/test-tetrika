@@ -3,7 +3,7 @@ import pytest
 import aiofiles
 from aiocsv import AsyncReader
 
-from task2.solution import parse, main
+from task2.solution import parse
 
 html_page_1 = """
     <html>
@@ -47,16 +47,13 @@ html_page_2 = """
         (html_page_2, ({"А": 2, "Б": 1}, None)),
     ],
 )
-@pytest.mark.asyncio
-async def test_parse(data, expected_result):
+def test_parse(data, expected_result):
 
-    assert await parse(data) == expected_result
+    assert parse(data) == expected_result
 
 
 @pytest.mark.asyncio
 async def test_csv():
-    await main()
-
     first_letter = ""
     last_letter = ""
     line_count = 0
