@@ -1,7 +1,6 @@
 import pytest
 
-import aiofiles
-from aiocsv import AsyncReader
+import csv
 
 from task2.solution import parse
 
@@ -52,14 +51,13 @@ def test_parse(data, expected_result):
     assert parse(data) == expected_result
 
 
-@pytest.mark.asyncio
-async def test_csv():
+def test_csv():
     first_letter = ""
     last_letter = ""
     line_count = 0
 
-    async with aiofiles.open("task2/beasts.csv", encoding="utf-8") as afp:
-        async for row in AsyncReader(afp):
+    with open("task2/beasts.csv", encoding="utf-8") as fp:
+        for row in csv.reader(fp):
             if not first_letter:
                 first_letter = row[0]
 

@@ -1,9 +1,7 @@
-import asyncio
+import csv
 import logging
 
-import aiofiles
 import requests
-from aiocsv import AsyncWriter
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -30,7 +28,13 @@ def parse(html: str) -> tuple[dict[str, int], str | None]:
     return temp, uri
 
 
-def get_result() -> dict[str, int]:
+def to_csv(data: dict, filename: str) -> None:
+    with open(filename, mode="w", encoding="utf-8") as fp:
+        writer = csv.writer(fp)
+        writer.writerows(data.items())
+
+
+def main() -> None:
     result = {}
     base = "https://ru.wikipedia.org"
     url = "https://ru.wikipedia.org/w/index.php?title=Категория:Животные_по_алфавиту"
@@ -46,16 +50,10 @@ def get_result() -> dict[str, int]:
 
         url = f"{base}{uri}"
 
-    return result
-
-
-async def to_csv(data: dict, filename: str) -> None:
-    async with aiofiles.open(filename, mode="w", encoding="utf-8") as afp:
-        writer = AsyncWriter(afp, dialect="unix")
-        await writer.writerows(data.items())
+    to_csv(result, "task2/beasts.csv")
 
 
 if __name__ == "__main__":
     logger.info("Started")
-    asyncio.run(to_csv(get_result(), "task2/beasts.csv"))
+    main()
     logger.info("Finished")
