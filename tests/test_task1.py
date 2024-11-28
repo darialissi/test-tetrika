@@ -24,27 +24,19 @@ def sum_bool(a: bool, b: bool) -> int:
 
 
 @pytest.mark.parametrize(
-    "func, arg1, arg2, expected_result, mark",
+    "func, arg1, arg2, expected_result",
     [
-        (sum_int, 1, 2, 3, "answer"),
-        (sum_int, 1, 2.4, TypeError, "error"),
-        (sum_int, True, 1, TypeError, "error"),
-        (sum_int_float, 1, 2.1, 3.1, "answer"),
-        (sum_int_float, 1.1, 2, TypeError, "error"),
-        (sum_str, "1", 2, TypeError, "error"),
-        (sum_str, "a", "b", "ab", "answer"),
-        (sum_bool, True, True, 2, "answer"),
-        (sum_bool, True, 1, TypeError, "error"),
+        (sum_int, 1, 2, 3),
+        (sum_int_float, 1, 2.1, 3.1),
+        (sum_str, "a", "b", "ab"),
+        (sum_bool, True, True, 2),
+        pytest.param(sum_int, 1, 2.4, None, marks=pytest.mark.xfail(raises=TypeError)),
+        pytest.param(sum_int, True, 1, None, marks=pytest.mark.xfail(raises=TypeError)),
+        pytest.param(sum_int_float, 1.1, 2, None, marks=pytest.mark.xfail(raises=TypeError)),
+        pytest.param(sum_str, "1", 2, None, marks=pytest.mark.xfail(raises=TypeError)),
+        pytest.param(sum_bool, True, 1, None, marks=pytest.mark.xfail(raises=TypeError)),
     ],
 )
-def test(func, arg1, arg2, expected_result, mark):
+def test(func, arg1, arg2, expected_result):
 
-    match mark:
-        case "answer":
-            assert func(arg1, arg2) == expected_result
-
-        case "error":
-            with pytest.raises(Exception) as e:
-                func(arg1, arg2)
-
-            assert e.type is expected_result
+    assert func(arg1, arg2) == expected_result
