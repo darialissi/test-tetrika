@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "tetrika-interview"
+version = "0.1.0"
+description = ""
+authors = ["darialissi"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+wikipedia-api = "^0.7.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+black = "^24.10.0"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.black]
+line-length = 120
+target_version = ["py311"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
